@@ -1,0 +1,16 @@
+name: Auto Delete Old Files
+
+on:
+  schedule:
+   - cron: 0 0 * * *
+    
+jobs:
+  delete-old-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Delete old files
+        run: |
+          find . -type f -mtime +2 -delete
