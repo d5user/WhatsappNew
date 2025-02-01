@@ -15,9 +15,15 @@ jobs:
         with:
           persist-credentials: false  # Important to avoid authentication conflicts
 
+      - name: Check files older than 2 days
+        run: |
+          echo "Finding files older than 2 days..."
+          find . -type f -mtime +2 -print || echo "No files found"
+
       - name: Remove files older than 2 days
         run: |
-          find . -type f -mtime +2 -delete;
+          echo "Deleting files older than 2 days..."
+          find . -type f -mtime +2 -exec rm -v {} \; || echo "No files to delete"
 
       - name: Commit and Push Changes
         env:
