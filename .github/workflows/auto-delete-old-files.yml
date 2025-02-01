@@ -1,4 +1,4 @@
-name: Delete old WhatsApp attachments
+name: Delete all files older than 2 days (excluding workflows)
 
 on:
   schedule:
@@ -12,43 +12,38 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # Important to avoid authentication conflicts
 
-      - name: Find files committed in the last 5 days
+      - name: Remove files older than 2 days (excluding workflows)
         run: |
-          echo "Finding files committed in the last 2 days..."
+          # Find and delete all files older than 2 days, excluding .github/workflows
+          echo "Removing files older than 2 days, excluding workflow files..."
+
+          # Get a list of files changed in the last 2 days
           files=$(git log --since="2 days ago" --pretty=format: --name-only | sort -u)
-          if [ -z "$files" ]; then
+
+          # Exclude workflow files by filtering out anything in .github/workflows
+          filtered_files=$(echo "$files" | grep -v "^\.github/workflows/")
+
+          if [ -z "$filtered_files" ]; then
             echo "No files to delete."
           else
-            echo "$files" > files-to-delete.txt
+            echo "$filtered_files" > files-to-delete.txt
             cat files-to-delete.txt
+            while IFS= read -r file; do
+              git rm "$file" || echo "Failed to remove $file"
+            done < files-to-delete.txt
           fi
-
-      - name: Remove files committed in the last 2 days
-        run: |
-          echo "Removing files committed in the last 2 days..."
-          while IFS= read -r file; do
-            git rm "$file" || echo "Failed to remove $file"
-          done < files-to-delete.txt
 
       - name: Commit and Push Changes
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git config user.name "d5user"
-          git config user.email "d5.softtradeinfotech@gmail.com"
-          
-           # Set authentication using the token
+          git config --global user.name "d5user"
+          git config --global user.email "d5.softtradeinfotech@gmail.com"
+
           git remote set-url origin https://oauth2:${GH_PAT}@github.com/d5user/WhatsappNew.git
           
-          # Pull latest changes to avoid conflicts
-          git pull origin main --rebase
-          
-          # Stage and commit changes          
+          git status
           git add .
-          git commit -m "Deleted WhatsApp attachments older than 2 days" || echo "No changes to commit"
-           
-           # Push the changes
+          git commit -m "Deleted files older than 2 days, excluding workflows" || echo "No changes to commit"
           git push origin main
