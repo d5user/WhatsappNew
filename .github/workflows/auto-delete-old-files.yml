@@ -41,7 +41,7 @@ jobs:
           git config --global user.name "d5user"
           git config --global user.email "d5.softtradeinfotech@gmail.com"
 
-          git remote set-url origin https://oauth2:${GH_PAT}@github.com/d5user/WhatsappNew.git
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/d5user/WhatsappNew.git
           
           git status
           git add .
