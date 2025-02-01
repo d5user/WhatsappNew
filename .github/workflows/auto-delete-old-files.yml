@@ -17,7 +17,7 @@ jobs:
 
       - name: Remove files older than 2 days
         run: |
-          find . -type f -mtime +2 -exec rm {} \;
+          find . -type f -mtime +2 -delete;
 
       - name: Commit and Push Changes
         env:
