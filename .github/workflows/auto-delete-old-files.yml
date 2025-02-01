@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
 
       - name: Set up Git
         run: |
@@ -36,4 +38,5 @@ jobs:
       - name: Commit changes
         run: |
           git commit -m "Delete files committed 3 days ago"
-          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/d5user/WhatsappNew.git HEAD:main
+          git push origin HEAD:main  # Push using the default GITHUB_TOKEN
+
