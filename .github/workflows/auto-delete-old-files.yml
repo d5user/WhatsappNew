@@ -17,8 +17,8 @@ jobs:
       - name: Remove files older than 2 days
         run: |
           find whatsapp_attachments/ -type f -mtime +2 -exec rm {} \;
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "d5user"
+          git config --global user.email "d5.softtradeinfotech@gmail.com"
           git add .
           git commit -m "Deleted WhatsApp attachments older than 2 days" || echo "No changes to commit"
           git push
