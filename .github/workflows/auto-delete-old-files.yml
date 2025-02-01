@@ -14,8 +14,8 @@ jobs:
 
       - name: Set up Git
         run: |
-         git config --global user.name "d5user"
-         git config --global user.email "d5.softtradeinfotech@gmail.com"
+          git config --global user.name "d5user"
+          git config --global user.email "d5.softtradeinfotech@gmail.com"
 
       - name: Get commit date of files
         run: |
@@ -36,4 +36,4 @@ jobs:
       - name: Commit changes
         run: |
           git commit -m "Delete files committed 3 days ago"
-          git push origin HEAD
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/d5user/WhatsappNew.git HEAD:main
