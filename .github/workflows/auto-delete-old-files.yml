@@ -1,43 +1,44 @@
-name: Clean Old Files
+name: Delete old WhatsApp attachments
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs at midnight UTC every day
-      workflow_dispatch:  # Allows manual trigger
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  clean-files:
+  cleanup:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
+          persist-credentials: false  # Important to avoid authentication conflicts
 
-      - name: Set up Git
+      - name: Check files older than 2 days
         run: |
-          git config --global user.name "d5user"
-          git config --global user.email "d5.softtradeinfotech@gmail.com"
-
-      - name: Get commit date of files
+          echo "Finding files older than 2 days..."
+          find . -type f -mtime +2 -print || echo "No files found"
+      - name: Remove files older than 2 days
         run: |
-          # Get the list of files committed 3 days ago
-          THREE_DAYS_AGO=$(date -d '3 days ago' --utc +%Y-%m-%dT%H:%M:%SZ)
-          FILES_TO_DELETE=$(git log --since="$THREE_DAYS_AGO" --name-only --pretty=format: | sort -u)
-
-          # Delete the files, excluding .github/workflows
-          for file in $FILES_TO_DELETE; do
-            if [ -f "$file" ] && [[ "$file" != .github/workflows/* ]]; then
-              echo "Deleting $file"
-              git rm "$file"
-            else
-              echo "Skipping $file (workflow file)"
-            fi
-          done
-
-      - name: Commit changes
+          echo "Deleting files older than 2 days..."
+          find . -type f -mtime +2 -exec rm -v {} \; || echo "No files to delete"
+      - name: Commit and Push Changes
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git commit -m "Delete files committed 3 days ago"
-          git push origin HEAD:main  # Push using the default GITHUB_TOKEN
-
+          git config user.name "d5user"
+          git config user.email "d5.softtradeinfotech@gmail.com"
+          
+           # Set authentication using the token
+          git remote set-url origin https://oauth2:${GH_PAT}@github.com/d5user/WhatsappNew.git
+          
+          # Pull latest changes to avoid conflicts
+          git pull origin main --rebase
+          
+          # Stage and commit changes          
+          git add .
+          git commit -m "Deleted WhatsApp attachments older than 2 days" || echo "No changes to commit"
+           
+           # Push the changes
+          git push origin main
