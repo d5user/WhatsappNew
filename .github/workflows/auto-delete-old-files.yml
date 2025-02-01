@@ -27,5 +27,5 @@ jobs:
           git config --global user.email "d5.softtradeinfotech@gmail.com"
           git add .
           git commit -m "Deleted WhatsApp attachments older than 2 days" || echo "No changes to commit"
-          git push https://d5user:${GH_PAT}@github.com/d5user/WhatsappNew.git main
+          git push https://d5user:${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}@github.com/d5user/WhatsappNew.git main
 
