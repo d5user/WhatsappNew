@@ -3,6 +3,7 @@ name: Clean Old Files
 on:
   schedule:
     - cron: '0 0 * * *' # Runs at midnight UTC every day
+      workflow_dispatch:  # Allows manual trigger
 
 jobs:
   clean-files:
