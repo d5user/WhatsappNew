@@ -1,0 +1,53 @@
+name: Delete old WhatsApp attachments
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:  # Allows manual trigger
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false  # Important to avoid authentication conflicts
+     
+      - name: Find files committed in the last 2 days
+        run: |
+          echo "Finding files committed in the last 2 days..."
+          files=$(git log --since="2 days ago" --pretty=format: --name-only | sort -u)
+          if [ -z "$files" ]; then
+            echo "No files to delete."
+          else
+            echo "$files" > files-to-delete.txt
+            cat files-to-delete.txt
+          fi
+      - name: Remove files committed in the last 2 days
+        run: |
+          echo "Removing files committed in the last 2 days..."
+          while IFS= read -r file; do
+            git rm "$file" || echo "Failed to remove $file"
+          done < files-to-delete.txt
+      - name: Commit and Push Changes
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "d5user"
+          git config user.email "d5.softtradeinfotech@gmail.com"
+          
+           # Set authentication using the token
+          git remote set-url origin https://oauth2:${GH_PAT}@github.com/d5user/WhatsappNew.git
+          
+           # Stash uncommitted changes to avoid conflicts
+          git stash --include-untracked
+          # Pull latest changes
+          git pull --rebase origin main
+          # Apply stashed changes (if any)
+          git stash pop || echo "No stash to apply"
+          
+          # Stage and commit changes          
+          git add .
+          git commit -m "Deleted WhatsApp attachments older than 2 days" || echo "No changes to commit"
+           
+           # Push the changes
+          git push origin main
