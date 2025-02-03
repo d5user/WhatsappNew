@@ -14,20 +14,27 @@ jobs:
      
       - name: Find files committed in the last 2 days
         run: |
-          echo "Finding files committed in the last 2 days..."
+          echo "Finding files committed in the last 2 days, excluding workflow files..."
+          
+          # Get a list of files changed in the last 2 days
           files=$(git log --since="2 days ago" --pretty=format: --name-only | sort -u)
-          if [ -z "$files" ]; then
+          
+          # Exclude workflow files by filtering out anything in .github/workflows
+          filtered_files=$(echo "$files" | grep -v "^\.github/workflows/")
+          
+          if [ -z "$filtered_files" ]; then
             echo "No files to delete."
           else
-            echo "$files" > files-to-delete.txt
+            echo "$filtered_files" > files-to-delete.txt
             cat files-to-delete.txt
           fi
       - name: Remove files committed in the last 2 days
         run: |
-          echo "Removing files committed in the last 2 days..."
+          "Removing files older than 2 days, excluding workflow files..."
           while IFS= read -r file; do
             git rm "$file" || echo "Failed to remove $file"
           done < files-to-delete.txt
+
       - name: Commit and Push Changes
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
