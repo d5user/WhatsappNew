@@ -14,15 +14,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false  # Important to avoid authentication conflicts
+     
+      - name: Find files committed in the last 2 days
+        run: |
+          echo "Finding files committed in the last 2 days..."
+          files=$(git log --since="2 days ago" --pretty=format: --name-only | sort -u)
+          if [ -z "$files" ]; then
+            echo "No files to delete."
+          else
+            echo "$files" > files-to-delete.txt
+            cat files-to-delete.txt
+          fi
 
-      - name: Check files older than 2 days
+      - name: Remove files committed in the last 2 days
         run: |
-          echo "Finding files older than 2 days..."
-          find . -type f -mtime +2 -print || echo "No files found"
-      - name: Remove files older than 2 days
-        run: |
-          echo "Deleting files older than 2 days..."
-          find . -type f -mtime +2 -exec rm -v {} \; || echo "No files to delete"
+          echo "Removing files committed in the last 2 days..."
+          while IFS= read -r file; do
+            git rm "$file" || echo "Failed to remove $file"
+          done < files-to-delete.txt
+
       - name: Commit and Push Changes
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
