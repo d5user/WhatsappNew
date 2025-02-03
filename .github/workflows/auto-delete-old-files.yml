@@ -43,8 +43,14 @@ jobs:
            # Set authentication using the token
           git remote set-url origin https://oauth2:${GH_PAT}@github.com/d5user/WhatsappNew.git
           
-          # Pull latest changes to avoid conflicts
-          git pull origin main --rebase
+           # Stash uncommitted changes to avoid conflicts
+          git stash --include-untracked
+
+          # Pull latest changes
+          git pull --rebase origin main
+
+          # Apply stashed changes (if any)
+          git stash pop || echo "No stash to apply"
           
           # Stage and commit changes          
           git add .
